@@ -1,0 +1,196 @@
+body {
+  font-family: 'Consolas', 'MS Gothic', 'monospace';
+  background: #181828;
+  color: #eaeaea;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.cyber-bg {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(90deg, rgba(187,147,191,0.08) 0 2px, transparent 2px 40px),
+    repeating-linear-gradient(0deg, rgba(142,194,152,0.08) 0 2px, transparent 2px 40px),
+    radial-gradient(ellipse at 70% 20%, #bb93bf44 0%, transparent 70%),
+    radial-gradient(ellipse at 20% 80%, #8ec29844 0%, transparent 70%);
+  animation: cybermove 12s linear infinite;
+}
+@keyframes cybermove {
+  0% { background-position: 0 0, 0 0, 0 0, 0 0; }
+  100% { background-position: 40px 40px, 0 40px, 0 0, 0 0; }
+}
+
+main {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 48px auto 0 auto;
+  background: rgba(24,24,40,0.92);
+  border: 2.5px solid #bb93bf;
+  box-shadow: 0 0 32px #bb93bf88, 0 0 8px #8ec29888;
+  border-radius: 18px;
+  padding: 40px 28px 32px 28px;
+  backdrop-filter: blur(2px);
+}
+
+h1, h2, h3 {
+  font-family: 'Consolas', 'MS Gothic', 'monospace';
+  color: #bb93bf;
+  text-shadow: 0 0 8px #bb93bf88, 0 0 2px #fff2;
+}
+
+h2 {
+  border-left: 6px solid #8ec298;
+  padding-left: 12px;
+  margin-bottom: 18px;
+  margin-top: 36px;
+  font-size: 1.3em;
+  color: #8ec298;
+  text-shadow: 0 0 8px #8ec29888, 0 0 2px #fff2;
+}
+
+.welcome {
+  text-align: center;
+  margin-bottom: 36px;
+}
+.welcome h1 {
+  font-size: 2.2em;
+  color: #8ec298;
+  text-shadow: 0 0 12px #8ec29888, 0 0 2px #fff2;
+  margin-bottom: 8px;
+}
+
+.video-section {
+  margin-bottom: 36px;
+}
+.video-embed {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+  filter: drop-shadow(0 0 16px #bb93bf88);
+}
+
+.works {
+  margin-bottom: 36px;
+}
+.card-list {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.work-card {
+  background: linear-gradient(135deg, #23233a 60%, #bb93bf22 100%);
+  border: 2px solid #8ec298;
+  border-radius: 14px;
+  box-shadow: 0 0 16px #8ec29844, 0 0 2px #bb93bf88;
+  padding: 20px 24px;
+  width: 220px;
+  transition: transform 0.22s, box-shadow 0.22s, border-color 0.22s;
+  cursor: pointer;
+  font-size: 1.05rem;
+  position: relative;
+  overflow: hidden;
+}
+.work-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, #bb93bf33 0%, #8ec29833 100%);
+  opacity: 0;
+  transition: opacity 0.22s;
+  z-index: 0;
+}
+.work-card:hover {
+  transform: translateY(-10px) scale(1.04) rotate(-1deg);
+  box-shadow: 0 0 32px #bb93bf, 0 0 16px #8ec298;
+  border-color: #bb93bf;
+}
+.work-card:hover::before {
+  opacity: 0.18;
+}
+.work-card h3 {
+  color: #8ec298;
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 1.1em;
+}
+
+.profile {
+  margin-bottom: 0;
+}
+.profile-content {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin-top: 12px;
+  border: 2px solid #bb93bf;
+  border-radius: 18px;
+  padding: 16px 18px;
+  background: rgba(24,24,40,0.92);
+  transition: box-shadow 0.2s, border-color 0.2s, background 0.2s;
+}
+.icon {
+  width: 100px;
+  height: 100px;
+  border-radius: 20px;
+  border: 2.5px solid #bb93bf;
+  background: #23233a;
+  box-shadow: 0 0 12px #bb93bf88, 0 0 4px #8ec29888;
+}
+.profile-text {
+  flex: 1;
+}
+.links {
+  margin-top: 10px;
+}
+.links a {
+  display: inline-block;
+  margin-right: 18px;
+  color: #bb93bf;
+  text-decoration: none;
+  font-weight: bold;
+  border-bottom: 2px dashed #8ec298;
+  transition: color 0.2s, border-color 0.2s, text-shadow 0.2s;
+  text-shadow: 0 0 6px #bb93bf88;
+}
+.links a:hover {
+  color: #8ec298;
+  border-color: #bb93bf;
+  text-shadow: 0 0 12px #8ec29888;
+}
+.x-link::before {
+  content: '𝕏';
+  margin-right: 4px;
+}
+.yt-link::before {
+  content: '▶';
+  margin-right: 4px;
+}
+
+.profile-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 18px;
+  transition: box-shadow 0.2s, border-color 0.2s, background 0.2s;
+}
+.profile-link:hover .profile-content {
+  box-shadow: 0 0 24px #8ec298, 0 0 8px #bb93bf;
+  border-color: #8ec298;
+  background: rgba(142,194,152,0.08);
+}
+
+@media (max-width: 700px) {
+  main { padding: 10px 2px; }
+  .card-list { flex-direction: column; align-items: center; }
+  .profile-content { flex-direction: column; gap: 12px; }
+  .work-card { width: 90vw; }
+  .icon { width: 72px; height: 72px; }
+} 
