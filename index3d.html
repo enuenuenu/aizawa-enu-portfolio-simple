@@ -107,16 +107,6 @@
   <main>
 
     <!-- 3Dモデル表示エリア -->
-    <section class="model-section">
-      <h2>えぬをぐるぐる触ってみよう</h2>
-      <div id="model-viewer">
-        <div class="loading-text" id="loading-text">モデルを読み込み中...</div>
-        <div class="error-text" id="error-text" style="display: none;">
-          モデルの読み込みに失敗しました<br>
-          モデルファイル(model/bbb.glb)が存在するか確認してください
-        </div>
-      </div>
-    </section>
 
     <section class="profile">
       <h2>プロフィール</h2>
@@ -147,16 +137,26 @@
       </div>
     </section>
 
+    <section class="model-section">
+      <h2>えぬをぐるぐる触ってみよう！</h2>
+      <div id="model-viewer">
+        <div class="loading-text" id="loading-text">モデルを読み込み中...</div>
+        <div class="error-text" id="error-text" style="display: none;">
+          モデルの読み込みに失敗しました<br>
+          モデルファイル(model/aizawa-enu.glb)が存在するか確認してください
+        </div>
+      </div>
+    </section>
+
     <a href="character-videos.html" class="profile-link">character</a>
   </main>
 
-  <!-- Three.js CDN（確実に動作するバージョン） -->
+  <!-- Three.js CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
   <script>
-    // デバッグ用：Three.jsが読み込まれているか確認
     console.log('THREE version:', THREE.REVISION);
 
     const container = document.getElementById('model-viewer');
@@ -196,172 +196,97 @@
     directionalLight.shadow.mapSize.height = 2048;
     scene.add(directionalLight);
 
-    // 追加のライト（キャラクターをよく見えるように）
+    // 追加のライト
     const frontLight = new THREE.DirectionalLight(0xffffff, 0.5);
     frontLight.position.set(0, 0, 5);
     scene.add(frontLight);
 
-    // デバッグ用：キューブを表示（モデルが読み込まれるまでの確認用）
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
-    const cube = new THREE.Mesh(geometry, material);
-    cube.position.set(2, 0, 0);
-    scene.add(cube);
-
-    // モデル読み込み（GitHub Pages対応版）
+    // モデル読み込み
     const loader = new THREE.GLTFLoader();
     
-    // GitHub Pagesでの読み込み用に設定
-    loader.setPath('');
+    console.log('モデル読み込み開始: model/aizawa-enu.glb');
     
-    // キャッシュバスター用のタイムスタンプ
-    const cacheBuster = new Date().getTime();
-    
-    // 複数のパスを試す（GitHub Pages対応）
-    const modelPaths = [
-      `model/bbb.glb?v=${cacheBuster}`,        // キャッシュバスター付き
-      `./model/bbb.glb?v=${cacheBuster}`,      // 相対パス明示
-      `bbb.glb?v=${cacheBuster}`,              // 同じフォルダ
-      `model/bbb.glb`,                         // オリジナル
-      `./model/bbb.glb`,                       // 相対パス
-      `bbb.glb`                                // 同じフォルダ（キャッシュなし）
-    ];
-    
-    let currentPathIndex = 0;
-    
-    function tryLoadModel() {
-      if (currentPathIndex >= modelPaths.length) {
-        console.error('全てのパスでモデルの読み込みに失敗しました');
-        loadingText.style.display = 'none';
-        errorText.innerHTML = `
-          モデルファイルが見つかりません<br>
-          GitHub Pages環境の可能性があります<br>
-          <strong>対処法：</strong><br>
-          1. ファイルパスを確認<br>
-          2. ブラウザのキャッシュをクリア<br>
-          3. 数分待ってから再試行<br>
-          <br>試したパス：<br>
-          ${modelPaths.map(path => `• ${path}`).join('<br>')}
-        `;
-        errorText.style.display = 'block';
-        return;
-      }
-      
-      const currentPath = modelPaths[currentPathIndex];
-      console.log(`モデル読み込み試行中 [${currentPathIndex + 1}/${modelPaths.length}]: ${currentPath}`);
-      
-      // GitHub Pages用の追加設定
-      const isGitHubPages = window.location.hostname.includes('github.io');
-      if (isGitHubPages) {
-        console.log('GitHub Pages環境を検出しました');
-      }
-      
-      loader.load(
-        currentPath,
-              function (gltf) {
-          console.log(`✅ モデル読み込み成功！パス: ${currentPath}`, gltf);
-          
-          const model = gltf.scene;
-          
-          // モデルのサイズと位置を調整
-          const box = new THREE.Box3().setFromObject(model);
-          const center = box.getCenter(new THREE.Vector3());
-          const size = box.getSize(new THREE.Vector3());
-          
-          console.log('モデル情報:', {
-            center: center,
-            size: size,
-            children: model.children.length
-          });
-          
-          // モデルを中央に配置
-          model.position.sub(center);
-          
-          // モデルのスケールを調整
-          const maxSize = Math.max(size.x, size.y, size.z);
-          if (maxSize > 0) {
-            const scaleFactor = 2 / maxSize;
-            model.scale.setScalar(scaleFactor);
-            console.log(`スケール調整: ${scaleFactor}`);
-          }
-          
-          // シャドウの設定
-          model.traverse(function (child) {
-            if (child.isMesh) {
-              child.castShadow = true;
-              child.receiveShadow = true;
-              console.log('メッシュ発見:', child.name || '名前なし');
-            }
-          });
-          
-          scene.add(model);
-          
-          // ローディングテキストを隠す
-          loadingText.style.display = 'none';
-          
-          // デバッグキューブを削除
-          scene.remove(cube);
-          
-          // 成功メッセージを表示
-          const successMsg = document.createElement('div');
-          successMsg.style.cssText = `
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(76, 175, 80, 0.9);
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 14px;
-            z-index: 100;
-          `;
-          successMsg.textContent = `モデル読み込み成功: ${currentPath}`;
-          document.getElementById('model-viewer').appendChild(successMsg);
-          
-          // 3秒後にメッセージを削除
-          setTimeout(() => {
-            if (successMsg.parentNode) {
-              successMsg.parentNode.removeChild(successMsg);
-            }
-          }, 3000);
-        },
-        function (progress) {
-          const percent = (progress.loaded / progress.total * 100).toFixed(1);
-          console.log(`読み込み進行中 (${currentPath}): ${percent}%`);
-          
-          // プログレスバーを更新
-          loadingText.innerHTML = `モデルを読み込み中... ${percent}%`;
-        },
-        function (error) {
-          console.warn(`❌ パス ${currentPath} で読み込み失敗:`, error);
-          
-          // GitHub Pages特有のエラーをチェック
-          if (error.message && error.message.includes('CORS')) {
-            console.error('CORS エラーが発生しました - GitHub Pages環境では発生することがあります');
-          }
-          
-          currentPathIndex++;
-          
-          // 短い遅延を入れて次のパスを試す（GitHub Pagesでの安定性向上）
-          setTimeout(() => {
-            tryLoadModel();
-          }, 100);
+    loader.load(
+      'model/aizawa-enu.glb',
+      function (gltf) {
+        console.log('✅ モデル読み込み成功！', gltf);
+        
+        const model = gltf.scene;
+        
+        // モデルのサイズと位置を調整
+        const box = new THREE.Box3().setFromObject(model);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+        
+        console.log('モデル情報:', {
+          center: center,
+          size: size,
+          children: model.children.length
+        });
+        
+        // モデルを中央に配置
+        model.position.sub(center);
+        
+        // モデルのスケールを調整
+        const maxSize = Math.max(size.x, size.y, size.z);
+        if (maxSize > 0) {
+          const scaleFactor = 2 / maxSize;
+          model.scale.setScalar(scaleFactor);
+          console.log(`スケール調整: ${scaleFactor}`);
         }
-      );
-    }
-    
-    // モデル読み込み開始
-    console.log('モデル読み込み開始...');
-    tryLoadModel();
+        
+        // シャドウの設定
+        model.traverse(function (child) {
+          if (child.isMesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+            console.log('メッシュ発見:', child.name || '名前なし');
+          }
+        });
+        
+        scene.add(model);
+        
+        // ローディングテキストを隠す
+        loadingText.style.display = 'none';
+        
+        // 成功メッセージを表示
+        const successMsg = document.createElement('div');
+        successMsg.style.cssText = `
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          background: rgba(76, 175, 80, 0.9);
+          color: white;
+          padding: 10px;
+          border-radius: 5px;
+          font-size: 14px;
+          z-index: 100;
+        `;
+        successMsg.textContent = 'モデル読み込み成功！';
+        container.appendChild(successMsg);
+        
+        // 3秒後にメッセージを削除
+        setTimeout(() => {
+          if (successMsg.parentNode) {
+            successMsg.parentNode.removeChild(successMsg);
+          }
+        }, 3000);
+      },
+      function (progress) {
+        const percent = (progress.loaded / progress.total * 100).toFixed(1);
+        console.log(`読み込み進行中: ${percent}%`);
+        loadingText.innerHTML = `モデルを読み込み中... ${percent}%`;
+      },
+      function (error) {
+        console.error('❌ モデル読み込みエラー:', error);
+        loadingText.style.display = 'none';
+        errorText.style.display = 'block';
+      }
+    );
 
     // アニメーションループ
     function animate() {
       requestAnimationFrame(animate);
-      
-      // デバッグキューブの回転
-      cube.rotation.x += 0.01;
-      cube.rotation.y += 0.01;
-      
       controls.update();
       renderer.render(scene, camera);
     }
@@ -378,7 +303,6 @@
       renderer.setSize(width, height);
     });
 
-    // デバッグ情報の表示
     console.log('Scene:', scene);
     console.log('Camera:', camera);
     console.log('Renderer:', renderer);
