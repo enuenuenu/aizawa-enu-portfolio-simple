@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>えぬの動画選択システム</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Consolas', 'MS Gothic', 'monospace';
+            background: #181828;
+            color: #eaeaea;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .cyber-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+            background:
+                repeating-linear-gradient(90deg, rgba(187, 147, 191, 0.08) 0 2px, transparent 2px 40px),
+                repeating-linear-gradient(0deg, rgba(142, 194, 152, 0.08) 0 2px, transparent 2px 40px),
+                radial-gradient(ellipse at 70% 20%, #bb93bf44 0%, transparent 70%),
+                radial-gradient(ellipse at 20% 80%, #8ec29844 0%, transparent 70%);
+            animation: cybermove 12s linear infinite;
+        }
+
+        @keyframes cybermove {
+            0% {
+                background-position: 0 0, 0 0, 0 0, 0 0;
+            }
+
+            100% {
+                background-position: 40px 40px, 0 40px, 0 0, 0 0;
+            }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 30px;
+            height: calc(100vh - 40px);
+        }
+
+        .character-panel {
+            background: rgba(24, 24, 40, 0.92);
+            border: 2.5px solid #bb93bf;
+            box-shadow: 0 0 32px #bb93bf88, 0 0 8px #8ec29888;
+            border-radius: 18px;
+            padding: 30px;
+            backdrop-filter: blur(2px);
+        }
+
+        .character-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            margin-bottom: 20px;
+        }
+
+        .character-image {
+            width: 100%;
+            height: 100%;
+            background: #2B7BF7;
+            /* 青い背景色を一時的に表示 */
+            border: 2px solid #8ec298;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            /* 実際の画像を使用する場合は以下をコメントアウト解除 */
+            background-image: url('enu-fullbody.png');
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .character-image:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 24px #8ec298, 0 0 8px #bb93bf;
+        }
+
+        /* 選択可能エリアの定義 */
+        .selectable-area {
+            position: absolute;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .selectable-area:hover {
+            border-color: #8ec298;
+            background: rgba(142, 194, 152, 0.2);
+            box-shadow: 0 0 20px rgba(142, 194, 152, 0.5);
+        }
+
+        .selectable-area.active {
+            border-color: #bb93bf;
+            background: rgba(187, 147, 191, 0.3);
+            box-shadow: 0 0 30px rgba(187, 147, 191, 0.7);
+        }
+
+        /* エリア配置 - アップロードされた画像に合わせて調整 */
+        .head-area {
+            top: 5%;
+            left: 28%;
+            width: 44%;
+            height: 30%;
+            border-radius: 50%;
+        }
+
+        .face-area {
+            top: 12%;
+            left: 32%;
+            width: 36%;
+            height: 18%;
+            border-radius: 20px;
+        }
+
+        .mouth-area {
+            top: 24%;
+            left: 44%;
+            width: 12%;
+            height: 4%;
+            border-radius: 15px;
+        }
+
+        .torso-area {
+            top: 35%;
+            left: 20%;
+            width: 60%;
+            height: 50%;
+            border-radius: 10px;
+        }
+
+        .lower-body-area {
+            top: 85%;
+            left: 38%;
+            width: 24%;
+            height: 15%;
+            border-radius: 10px;
+        }
+
+        /* ラベル */
+        .area-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #eaeaea;
+            font-weight: bold;
+            text-shadow: 0 0 8px #bb93bf88, 0 0 2px #fff2;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            font-size: 14px;
+        }
+
+        .selectable-area:hover .area-label {
+            opacity: 1;
+        }
+
+        .breadcrumb {
+            background: rgba(24, 24, 40, 0.92);
+            border: 2px solid #8ec298;
+            padding: 15px;
+            border-radius: 10px;
+            color: #eaeaea;
+            margin-bottom: 20px;
+        }
+
+        .video-panel {
+            background: rgba(24, 24, 40, 0.92);
+            border: 2.5px solid #bb93bf;
+            box-shadow: 0 0 32px #bb93bf88, 0 0 8px #8ec29888;
+            border-radius: 18px;
+            padding: 30px;
+            backdrop-filter: blur(2px);
+            overflow-y: auto;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .video-card {
+            background: linear-gradient(135deg, #23233a 60%, #bb93bf22 100%);
+            border: 2px solid #8ec298;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .video-card:hover {
+            transform: translateY(-5px) scale(1.04);
+            box-shadow: 0 0 24px #8ec298, 0 0 8px #bb93bf;
+            border-color: #bb93bf;
+        }
+
+        .video-thumbnail {
+            width: 100%;
+            height: 140px;
+            background: linear-gradient(135deg, #bb93bf 0%, #8ec298 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #181828;
+            font-size: 18px;
+            position: relative;
+            font-weight: bold;
+        }
+
+        .play-button {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: rgba(24, 24, 40, 0.9);
+            border: 2px solid #bb93bf;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 0 8px #bb93bf88;
+        }
+
+        .play-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 16px #bb93bf;
+        }
+
+        .play-button::after {
+            content: '';
+            width: 0;
+            height: 0;
+            border-left: 15px solid #bb93bf;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            margin-left: 3px;
+        }
+
+        .video-info {
+            padding: 15px;
+            color: #eaeaea;
+        }
+
+        .video-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .video-description {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .back-button {
+            background: rgba(142, 194, 152, 0.2);
+            color: #8ec298;
+            border: 2px solid #8ec298;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            font-family: 'Consolas', 'MS Gothic', 'monospace';
+            font-weight: bold;
+        }
+
+        .back-button:hover {
+            background: rgba(142, 194, 152, 0.3);
+            box-shadow: 0 0 12px #8ec29888;
+        }
+
+        .section-title {
+            color: #bb93bf;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-family: 'Consolas', 'MS Gothic', 'monospace';
+            text-shadow: 0 0 8px #bb93bf88, 0 0 2px #fff2;
+        }
+
+        .instruction {
+            color: rgba(234, 234, 234, 0.8);
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="cyber-bg"></div>
+    <div class="container">
+        <div class="character-panel">
+                <p ><a href="index.html" class="profile-link">戻る</a>
+       </p>          
+       <h2 class="section-title">藍沢えぬ</h2>
+            <p class="instruction">部位をクリックして動画を選択</p>
+
+            <div class="character-container">
+                <div class="character-image">
+                    <!-- 選択可能エリア -->
+                    <div class="selectable-area head-area" data-area="head">
+                        <div class="area-label">顔・頭部</div>
+                    </div>
+                    <div class="selectable-area face-area" data-area="face" style="display: none;">
+                        <div class="area-label">顔全体</div>
+                    </div>
+                    <div class="selectable-area mouth-area" data-area="mouth" style="display: none;">
+                        <div class="area-label">口・声</div>
+                    </div>
+                    <div class="selectable-area torso-area" data-area="torso">
+                        <div class="area-label">上半身</div>
+                    </div>
+                    <div class="selectable-area lower-body-area" data-area="lower">
+                        <div class="area-label">下半身</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="breadcrumb">
+                <button class="back-button" id="backButton" style="display: none;">← 戻る</button>
+                <span id="currentPath">部位を選択してください</span>
+            </div>
+        </div>
+
+        <div class="video-panel">
+            <div id="videoContent">
+                <h3 class="section-title">動画を選択するために部位をクリックしてください</h3>
+                <div class="instruction">
+                    左側のキャラクターの部位をクリックすると、関連する動画が表示されます。<br>
+                    顔を選択すると、さらに詳細な部位を選択できます。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 動画データベース（実際の実装では外部JSONファイルから読み込み）
+        const videoDatabase = {
+            head: [
+                { id: 1, title: "頭部基本動作", description: "頭の向きや傾きのアニメーション", thumbnail: "head1.jpg", video: "head1.mp4" },
+                { id: 2, title: "髪の毛の動き", description: "風に揺れる髪のアニメーション", thumbnail: "hair1.jpg", video: "hair1.mp4" },
+                { id: 3, title: "頭部全体動作", description: "うなずき、首振りなど", thumbnail: "head_general.jpg", video: "head_general.mp4" }
+            ],
+            face: [
+                { id: 4, title: "目の動き・瞬き", description: "瞬きや視線移動のアニメーション", thumbnail: "eyes1.jpg", video: "eyes1.mp4" },
+                { id: 5, title: "表情変化", description: "喜怒哀楽の表情アニメーション", thumbnail: "expressions.jpg", video: "expressions.mp4" },
+                { id: 6, title: "眉毛の動き", description: "感情表現に関わる眉の動き", thumbnail: "eyebrows.jpg", video: "eyebrows.mp4" },
+                { id: 7, title: "頬の表現", description: "笑顔や困り顔の頬の動き", thumbnail: "cheeks.jpg", video: "cheeks.mp4" }
+            ],
+            mouth: [
+                { id: 8, title: "基本口パク", description: "基本的な口の開閉動作", thumbnail: "mouth1.jpg", video: "mouth1.mp4" },
+                { id: 9, title: "発音動画", description: "あいうえお・子音の発音", thumbnail: "pronunciation.jpg", video: "pronunciation.mp4" },
+                { id: 10, title: "歌唱動画", description: "歌を歌っている口の動き", thumbnail: "singing.jpg", video: "singing.mp4" },
+                { id: 11, title: "セリフ・会話", description: "日常会話の口パク", thumbnail: "dialogue.jpg", video: "dialogue.mp4" },
+                { id: 12, title: "感情的発話", description: "怒り・驚きなどの感情込めた発話", thumbnail: "emotional_speech.jpg", video: "emotional_speech.mp4" }
+            ],
+            torso: [
+                { id: 13, title: "上半身基本動作", description: "腕の基本的な動き", thumbnail: "torso1.jpg", video: "torso1.mp4" },
+                { id: 14, title: "手振りジェスチャー", description: "表現豊かな手の動き", thumbnail: "gestures.jpg", video: "gestures.mp4" },
+                { id: 15, title: "肩・胸の動き", description: "呼吸や感情表現", thumbnail: "shoulder_chest.jpg", video: "shoulder_chest.mp4" }
+            ],
+            lower: [
+                { id: 16, title: "歩行アニメーション", description: "自然な歩き方", thumbnail: "walk1.jpg", video: "walk1.mp4" },
+                { id: 17, title: "ダンス動作", description: "リズミカルなダンス", thumbnail: "dance1.jpg", video: "dance1.mp4" },
+                { id: 18, title: "座り・立ち動作", description: "椅子に座る・立つ動作", thumbnail: "sit_stand.jpg", video: "sit_stand.mp4" },
+                { id: 19, title: "足踏み・ステップ", description: "その場での足の動き", thumbnail: "steps.jpg", video: "steps.mp4" }
+            ]
+        };
+
+        let currentSelection = null;
+        let selectionPath = [];
+
+        // DOM要素の取得
+        const backButton = document.getElementById('backButton');
+        const currentPath = document.getElementById('currentPath');
+        const videoContent = document.getElementById('videoContent');
+        const selectableAreas = document.querySelectorAll('.selectable-area');
+
+        // エリア選択イベント
+        selectableAreas.forEach(area => {
+            area.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const areaType = area.dataset.area;
+                handleAreaSelection(areaType);
+            });
+        });
+
+        // 戻るボタンイベント
+        backButton.addEventListener('click', () => {
+            goBack();
+        });
+
+        function handleAreaSelection(areaType) {
+            // 現在の選択状態をクリア
+            selectableAreas.forEach(area => area.classList.remove('active'));
+
+            if (areaType === 'head') {
+                // 頭部選択時は顔と口エリアを両方表示
+                selectionPath = ['head'];
+                currentSelection = 'head';
+                showSubAreas(['face', 'mouth']);
+                updatePath('頭部');
+                showVideos(videoDatabase.head);
+            } else if (areaType === 'face') {
+                // 顔選択時は顔全体の動画を表示（口は含まない）
+                selectionPath = ['head', 'face'];
+                currentSelection = 'face';
+                updatePath('頭部 > 顔全体');
+                showVideos(videoDatabase.face);
+            } else if (areaType === 'mouth') {
+                // 口選択時は声関連動画を表示
+                selectionPath = ['head', 'mouth'];
+                currentSelection = 'mouth';
+                updatePath('頭部 > 口・声');
+                showVideos(videoDatabase.mouth);
+            } else {
+                // その他の部位
+                selectionPath = [areaType];
+                currentSelection = areaType;
+                hideAllSubAreas();
+                updatePath(getAreaName(areaType));
+                showVideos(videoDatabase[areaType] || []);
+            }
+
+            // 選択されたエリアをハイライト
+            document.querySelector(`[data-area="${areaType}"]`).classList.add('active');
+
+            // 戻るボタンを表示
+            backButton.style.display = 'inline-block';
+        }
+
+        function showSubAreas(areas) {
+            hideAllSubAreas();
+            areas.forEach(area => {
+                const element = document.querySelector(`[data-area="${area}"]`);
+                if (element) {
+                    element.style.display = 'block';
+                }
+            });
+        }
+
+        function hideAllSubAreas() {
+            document.querySelector('[data-area="face"]').style.display = 'none';
+            document.querySelector('[data-area="mouth"]').style.display = 'none';
+        }
+
+        function updatePath(path) {
+            currentPath.textContent = path;
+        }
+
+        function getAreaName(area) {
+            const names = {
+                'head': '頭部',
+                'face': '顔全体',
+                'mouth': '口・声',
+                'torso': '上半身',
+                'lower': '下半身'
+            };
+            return names[area] || area;
+        }
+
+        function showVideos(videos) {
+            if (videos.length === 0) {
+                videoContent.innerHTML = `
+                    <h3 class="section-title">この部位の動画はまだありません</h3>
+                    <div class="instruction">今後追加予定です</div>
+                `;
+                return;
+            }
+
+            const videoCards = videos.map(video => `
+                <div class="video-card" onclick="playVideo('${video.video}')">
+                    <div class="video-thumbnail">
+                        <div class="play-button"></div>
+                        ${video.title}
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">${video.title}</div>
+                        <div class="video-description">${video.description}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            videoContent.innerHTML = `
+                <h3 class="section-title">${getAreaName(currentSelection)}の動画</h3>
+                <div class="video-grid">
+                    ${videoCards}
+                </div>
+            `;
+        }
+
+        function playVideo(videoFile) {
+            // 実際の実装では動画プレイヤーを開く
+            alert(`動画を再生: ${videoFile}\n\n実際の実装では、ここで動画プレイヤーを開いたり、\n動画URLに遷移したりします。`);
+        }
+
+        function goBack() {
+            if (selectionPath.length <= 1) {
+                // 最初の状態に戻る
+                reset();
+                return;
+            }
+
+            // 頭部の子要素から戻る場合
+            if (selectionPath.length === 2 && selectionPath[0] === 'head') {
+                // 顔全体 or 口から頭部に戻る
+                handleAreaSelection('head');
+            } else {
+                // その他の場合は1つ前の状態に戻る
+                selectionPath.pop();
+                const previousArea = selectionPath[selectionPath.length - 1];
+                handleAreaSelection(previousArea);
+            }
+        }
+
+        function reset() {
+            currentSelection = null;
+            selectionPath = [];
+            selectableAreas.forEach(area => area.classList.remove('active'));
+            hideAllSubAreas();
+            backButton.style.display = 'none';
+            currentPath.textContent = '部位を選択してください';
+
+            videoContent.innerHTML = `
+                <h3 class="section-title">動画を選択するために部位をクリックしてください</h3>
+                <div class="instruction">
+                    左側のキャラクターの部位をクリックすると、関連する動画が表示されます。<br>
+                    顔を選択すると、さらに詳細な部位を選択できます。
+                </div>
+            `;
+        }
+    </script>
+</body>
+
+</html>
