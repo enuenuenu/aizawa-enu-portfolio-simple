@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI動画おすすめアプリ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Consolas', 'MS Gothic', 'monospace';
+            background: #181828;
+            color: #eaeaea;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .cyber-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+            background:
+                repeating-linear-gradient(90deg, rgba(187,147,191,0.08) 0 2px, transparent 2px 40px),
+                repeating-linear-gradient(0deg, rgba(142,194,152,0.08) 0 2px, transparent 2px 40px),
+                radial-gradient(ellipse at 70% 20%, #bb93bf44 0%, transparent 70%),
+                radial-gradient(ellipse at 20% 80%, #8ec29844 0%, transparent 70%);
+            animation: cybermove 12s linear infinite;
+        }
+        @keyframes cybermove {
+            0% { background-position: 0 0, 0 0, 0 0, 0 0; }
+            100% { background-position: 40px 40px, 0 40px, 0 0, 0 0; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 600px;
+            width: 100%;
+            background: rgba(24,24,40,0.92);
+            border: 2.5px solid #bb93bf;
+            box-shadow: 0 0 32px #bb93bf88, 0 0 8px #8ec29888;
+            border-radius: 18px;
+            padding: 40px 28px 32px 28px;
+            backdrop-filter: blur(2px);
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Consolas', 'MS Gothic', 'monospace';
+            color: #8ec298;
+            text-shadow: 0 0 12px #8ec29888, 0 0 2px #fff2;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+        }
+
+        .start-screen {
+            display: block;
+        }
+
+        .question-screen {
+            display: none;
+        }
+
+        .result-screen {
+            display: none;
+        }
+
+        .question {
+            font-size: 1.5em;
+            color: #bb93bf;
+            text-shadow: 0 0 8px #bb93bf88, 0 0 2px #fff2;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .option-btn {
+            background: linear-gradient(135deg, #23233a 60%, #bb93bf22 100%);
+            border: 2px solid #8ec298;
+            color: #eaeaea;
+            padding: 15px 30px;
+            border-radius: 14px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: transform 0.22s, box-shadow 0.22s, border-color 0.22s;
+            font-weight: 500;
+            font-family: 'Consolas', 'MS Gothic', 'monospace';
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, #bb93bf33 0%, #8ec29833 100%);
+            opacity: 0;
+            transition: opacity 0.22s;
+            z-index: 0;
+        }
+
+        .option-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 0 24px #bb93bf, 0 0 12px #8ec298;
+            border-color: #bb93bf;
+        }
+
+        .option-btn:hover::before {
+            opacity: 0.18;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #23233a 60%, #8ec29822 100%);
+            border: 2px solid #8ec298;
+            color: #eaeaea;
+            padding: 20px 40px;
+            border-radius: 14px;
+            font-size: 1.3em;
+            cursor: pointer;
+            transition: transform 0.22s, box-shadow 0.22s, border-color 0.22s;
+            font-weight: 600;
+            font-family: 'Consolas', 'MS Gothic', 'monospace';
+            position: relative;
+            overflow: hidden;
+        }
+
+        .start-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, #8ec29833 0%, #bb93bf33 100%);
+            opacity: 0;
+            transition: opacity 0.22s;
+            z-index: 0;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-5px) scale(1.04);
+            box-shadow: 0 0 32px #8ec298, 0 0 16px #bb93bf;
+            border-color: #8ec298;
+        }
+
+        .start-btn:hover::before {
+            opacity: 0.18;
+        }
+
+        .progress {
+            width: 100%;
+            height: 8px;
+            background: rgba(24,24,40,0.8);
+            border: 1px solid #bb93bf;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            box-shadow: 0 0 8px #bb93bf44;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #8ec298, #bb93bf);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 3px;
+            box-shadow: 0 0 12px #8ec29888;
+        }
+
+        .video-recommendation {
+            background: linear-gradient(135deg, #23233a 60%, #bb93bf22 100%);
+            border: 2px solid #8ec298;
+            border-radius: 14px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 0 16px #8ec29844, 0 0 2px #bb93bf88;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .video-recommendation::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, #bb93bf11 0%, #8ec29811 100%);
+            opacity: 1;
+            z-index: 0;
+        }
+
+        .video-title {
+            font-size: 1.3em;
+            color: #8ec298;
+            text-shadow: 0 0 8px #8ec29888, 0 0 2px #fff2;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-family: 'Consolas', 'MS Gothic', 'monospace';
+            position: relative;
+            z-index: 1;
+        }
+
+        .video-description {
+            color: #eaeaea;
+            margin-bottom: 15px;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+        }
+
+        .video-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #23233a 60%, #bb93bf22 100%);
+            border: 2px solid #bb93bf;
+            color: #eaeaea;
+            text-decoration: none;
+            padding: 12px 25px;
+            border-radius: 14px;
+            transition: transform 0.22s, box-shadow 0.22s, border-color 0.22s;
+            font-weight: 500;
+            font-family: 'Consolas', 'MS Gothic', 'monospace';
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .video-link::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, #bb93bf33 0%, #8ec29833 100%);
+            opacity: 0;
+            transition: opacity 0.22s;
+            z-index: 0;
+        }
+
+        .video-link:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 0 24px #bb93bf, 0 0 12px #8ec298;
+            border-color: #8ec298;
+        }
+
+        .video-link:hover::before {
+            opacity: 0.18;
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #23233a 60%, #8ec29822 100%);
+            border: 2px solid #8ec298;
+            color: #eaeaea;
+            padding: 12px 25px;
+            border-radius: 14px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: transform 0.22s, box-shadow 0.22s, border-color 0.22s;
+            margin-top: 20px;
+            font-weight: 500;
+            font-family: 'Consolas', 'MS Gothic', 'monospace';
+            position: relative;
+            overflow: hidden;
+        }
+
+        .restart-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, #8ec29833 0%, #bb93bf33 100%);
+            opacity: 0;
+            transition: opacity 0.22s;
+            z-index: 0;
+        }
+
+        .restart-btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 0 24px #8ec298, 0 0 12px #bb93bf;
+            border-color: #bb93bf;
+        }
+
+        .restart-btn:hover::before {
+            opacity: 0.18;
+        }
+
+        h2 {
+            color: #bb93bf;
+            text-shadow: 0 0 8px #bb93bf88, 0 0 2px #fff2;
+            font-family: 'Consolas', 'MS Gothic', 'monospace';
+        }
+
+        .description-text {
+            color: #eaeaea;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .question {
+                font-size: 1.3em;
+            }
+        }
+    </style>
+    
+</head>
+<body>
+    
+    <div class="container">
+        <!-- スタート画面 -->
+        <div class="start-screen" id="startScreen">
+            <h1>🤖 AI動画おすすめアプリ</h1>
+            <p style="font-size: 1.2em; color: #666; margin-bottom: 30px;">
+                3つの質問に答えて、あなたにぴったりのAI関連動画を見つけましょう！
+            </p>
+            <button class="start-btn" onclick="startQuiz()">始めますか？</button>
+        </div>
+
+        <!-- 質問画面 -->
+        <div class="question-screen" id="questionScreen">
+            <div class="progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="question" id="questionText"></div>
+            <div class="options" id="optionsContainer"></div>
+        </div>
+
+        <!-- 結果画面 -->
+        <div class="result-screen" id="resultScreen">
+            <h2 style="color: #ffffff; margin-bottom: 20px;">🎉 回答ありがとうございます！</h2>
+            <p style="font-size: 1.2em; color: #666; margin-bottom: 30px;">あなたにおすすめの動画です！</p>
+            <div id="recommendationContainer"></div>
+            <button class="restart-btn" onclick="restartQuiz()">もう一度診断する</button>
+            <a href="index.html" class="profile-link" style="color: #ffffff;">ホームに戻る</a>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "AIの知識レベルは？",
+                options: [
+                    { text: "専門家レベル（深く狭い知識）", value: "expert" },
+                    { text: "初心者", value: "beginner" }
+                ]
+            },
+            {
+                question: "あなたがAIに望むものは？",
+                options: [
+                    { text: "正確で信頼できる情報提供", value: "accurate" },
+                    { text: "創造的で面白いアイデア提案", value: "creative" }
+                ]
+            },
+            {
+                question: "笑いたい？勉強したい？",
+                options: [
+                    { text: "笑いたい（エンターテイメント重視）", value: "entertainment" },
+                    { text: "勉強したい（学習・成長重視）", value: "learning" }
+                ]
+            }
+        ];
+
+        const videoRecommendations = {
+            "expert_accurate_entertainment": {
+                title: "AIはアメリカ大統領選挙を予測できるのか？[結果発表編]",
+                description: "AIはアメリカ大統領選を予想できるのか！？。５種類のAI別に比べてみました。",
+                url: "https://youtu.be/Rvmjmaa8nDU"
+            },
+            "expert_accurate_learning": {
+                title: "Open AIが作った文字起こしAIを使ってみた！[whisper AI]",
+                description: "オープンソースで無料です。",
+                url: "https://youtu.be/PCGjrVl9rsA"
+            },
+            "expert_creative_entertainment": {
+                title: "AIでBGMを作ってみた！",
+                description: "最新のAI音楽生成技術を使って、様々なジャンルの楽曲制作に挑戦。技術解説も交えた創造的なコンテンツです。",
+                url: "https://youtu.be/7z2dOwRT6Y0"
+            },
+            "expert_creative_learning": {
+                title: "最新AI技術でAIVTuberデビュー！？[AITuberキット]",
+                description: "AITUBERKITのレビュー動画です。",
+                url: "https://youtu.be/-SuIaEzxagU"
+            },
+            "beginner_accurate_entertainment": {
+                title: "AIを使ってポッドキャストを作ってみた！[NotebookLM]",
+                description: "AIがテキストをラジオ化してくれる",
+                url: "https://youtu.be/ixsTgiTPkE4"
+            },
+            "beginner_accurate_learning": {
+                title: "AIでイラストを動画に変えよう！[Dream Machine]",
+                description: "最近のトレンドのイラストを動画にするAI",
+                url: "https://youtu.be/ZeUFwU_-dyo"
+            },
+            "beginner_creative_entertainment": {
+                title: "AIを使ってミルクボーイの「コーンフレーク」の正体を暴く！[Claude]",
+                description: "ネタ動画です。",
+                url: "https://youtu.be/WM88kuZ6zoY"
+            },
+            "beginner_creative_learning": {
+                title: "AIを使ってBGMを除去してみた！[Ultimate Vocal Remover]",
+                description: "無料で使えるオープンソースです",
+                url: "https://youtu.be/yVwKrvvgEwg"
+            }
+        };
+
+        let currentQuestion = 0;
+        let answers = [];
+
+        function startQuiz() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('questionScreen').style.display = 'block';
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = questions[currentQuestion];
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('questionText').textContent = question.question;
+            
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.textContent = option.text;
+                button.onclick = () => selectAnswer(option.value);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function selectAnswer(answer) {
+            answers.push(answer);
+            currentQuestion++;
+            
+            if (currentQuestion < questions.length) {
+                setTimeout(showQuestion, 300);
+            } else {
+                setTimeout(showResult, 300);
+            }
+        }
+
+        function showResult() {
+            document.getElementById('questionScreen').style.display = 'none';
+            document.getElementById('resultScreen').style.display = 'block';
+            
+            const recommendationKey = answers.join('_');
+            const recommendation = videoRecommendations[recommendationKey];
+            
+            const container = document.getElementById('recommendationContainer');
+            container.innerHTML = `
+                <div class="video-recommendation">
+                    <div class="video-title">${recommendation.title}</div>
+                    <div class="video-description">${recommendation.description}</div>
+                    <a href="${recommendation.url}" target="_blank" class="video-link">動画を見る</a>
+                </div>
+            `;
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            answers = [];
+            document.getElementById('resultScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
+        }
+    </script>
+    
+    
+</body>
+<footer><p>
+         </p></footer>
+
+</html>
