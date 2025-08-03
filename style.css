@@ -122,6 +122,13 @@ h2 {
   margin-bottom: 8px;
   font-size: 1.1em;
 }
+.card1::before{
+  background-image: url("img/ai-sindann.png");
+}
+
+.card2::before {
+  background-image: url("img/icon.png"); /* AITUBERカードの画像 */
+}
 
 .profile {
   margin-bottom: 0;
